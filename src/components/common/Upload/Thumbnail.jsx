@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
 import { Upload, Icon, message } from 'antd';
+import baseUrl from '../../../constants/baseUrl';
+import PropTypes from 'prop-types';
 
-function getBase64(img, callback) {
-    const reader = new FileReader();
-    reader.addEventListener('load', () => callback(reader.result));
-    reader.readAsDataURL(img);
-  }
-  
 function beforeUpload(file) {
     const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
     if (!isJpgOrPng) {
@@ -19,26 +15,26 @@ function beforeUpload(file) {
     return isJpgOrPng && isLt2M;
 }
 
-function Thumbnail(){
+function Thumbnail({ pic, onChange }) {
     const [loading, setLoading] = useState(false);
-    const [imageUrl, setImageUrl] = useState('');
     const uploadButton = (
         <div>
-          <Icon type={loading ? 'loading' : 'plus'} />
-          <div className="ant-upload-text">Upload</div>
+            <Icon type={loading ? 'loading' : 'plus'} />
+            <div className="ant-upload-text">Upload</div>
         </div>
     );
 
-    function handleChange(info){
+    function handleChange(info) {
         if (info.file.status === 'uploading') {
             setLoading(true);
             return;
         }
         if (info.file.status === 'done') {
-            getBase64(info.file.originFileObj, function(imageUrl){
-                setImageUrl(imageUrl);
-                setLoading(false);
-            });
+            message.info('图片上传成功');
+            onChange(info.file.response.path);
+            setLoading(false);
+        } else if (info.file.status === 'error') {
+            message.error('文件上传失败');
         }
     };
 
@@ -48,13 +44,18 @@ function Thumbnail(){
             listType="picture-card"
             className="avatar-uploader"
             showUploadList={false}
-            action="http://localhost:3000/upload/thumbnail"
+            action={`${baseUrl}/upload/thumbnail`}
             beforeUpload={beforeUpload}
             onChange={handleChange}
         >
-            {imageUrl ? <img width={ 400 } src={imageUrl} alt="avatar" /> : uploadButton}
+            {pic ? <img width={400} src={pic} alt="avatar" /> : uploadButton}
         </Upload>
     )
+}
+
+Thumbnail.propTypes = {
+    pic: PropTypes.string.isRequired,
+    onChange: PropTypes.func.isRequired
 }
 
 export default Thumbnail;

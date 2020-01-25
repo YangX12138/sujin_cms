@@ -1,20 +1,26 @@
 import React from 'react';
-import { Layout, Menu, Icon  } from 'antd';
+import { Layout, Menu, Icon } from 'antd';
 import Routers from '../Routers';
 import styles from './Layouts.module.scss';
-import { Link, BrowserRouter as Router } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 
 const { Content, Footer, Sider } = Layout;
 
-const Layouts = () => {
-    return (
-        <Router>
-            <Layout className={ styles.container }>
+function Layouts() {
+    let token = window.localStorage.getItem('token');
+
+    if (!token) {
+        return (
+            <Redirect to="/login" />
+        )
+    } else {
+        return (
+            <Layout className={styles.container}>
                 <Sider>
-                    <div className={ styles.logo } />
-                    <Menu theme="dark" defaultSelectedKeys={['2']} mode="inline">
+                    <div className={styles.logo} />
+                    <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline">
                         <Menu.Item key="1">
-                            <Link to={'/cover'}>
+                            <Link to={'/'}>
                                 <Icon type="pie-chart" />
                                 <span>首页图</span>
                             </Link>
@@ -33,9 +39,9 @@ const Layouts = () => {
                     </Content>
                     <Footer style={{ textAlign: 'center' }}>Ant Design ©2018 Created by Ant UED</Footer>
                 </Layout>
-            </Layout>   
-        </Router>
-    )
+            </Layout>
+        )
+    }
 }
 
 export default Layouts;

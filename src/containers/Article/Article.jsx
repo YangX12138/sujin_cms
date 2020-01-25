@@ -1,19 +1,12 @@
-import React, { Fragment, } from 'react';
-import { Table, Icon, Row, Button} from 'antd';
-import { Link } from 'react-router-dom';  
+import React, { Fragment, useEffect, useState } from 'react';
+import { Table, Icon, Row, Button, message } from 'antd';
+import { Link, withRouter } from 'react-router-dom';
+import articleService from '../../api/article.service';
+import { formatDate } from '../../tools/tools';
 
-const data = [
-    {
-        id: '123',
-        title: '雨中的猫',
-        summary: '记得早先少年时 大家诚诚恳恳 说一句 是一句 清早上火车站 长街黑暗无行人 卖豆浆的小店冒着热气 从前的日色变得慢 车，马，邮件都慢 一生只够爱一个人   从前的锁也好看 钥...',
-        currentTime: '二月 10, 2013',
-        tags: 'aaaa',
-        thumb: 'https://isujin.com/wp-content/uploads/2014/07/bmcbamugw_485922_3316x2214-300x200.jpg'
-    },
-];  
+function Article(props) {
+    const [data, setData] = useState([]);
 
-function Article() {
     const columns = [
         {
             title: '标题',
@@ -37,18 +30,18 @@ function Article() {
         {
             title: '操作',
             width: 200,
-            render: () => {
+            render: (article) => {
                 return (
                     <div>
                         <Icon
-                            style={{color: 'rgb(24, 144, 255)', cursor: 'pointer'}}
-                            type='edit' 
-                            onClick={editArticle}
+                            style={{ color: 'rgb(24, 144, 255)', cursor: 'pointer' }}
+                            type='edit'
+                            onClick={() => { editArticle(article._id) }}
                         />
-                        <Icon 
-                            style={{color: 'red', marginLeft: 20, cursor: 'pointer'}}
+                        <Icon
+                            style={{ color: 'red', marginLeft: 20, cursor: 'pointer' }}
                             type='delete'
-                            onClick={deleteArticle}
+                            onClick={() => { deleteArticle(article._id) }}
                         />
                     </div>
                 )
@@ -57,9 +50,13 @@ function Article() {
         {
             title: '发布时间',
             dataIndex: 'currentTime',
-            width: 200
+            width: 200,
+            render: currentTime => {
+                return formatDate(new Date(currentTime));
+            }
         }
     ];
+
     const rowSelection = {
         onChange: handleSelectChange
     };
@@ -68,13 +65,32 @@ function Article() {
         console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
     }
 
-    function editArticle() {
-        console.log('edit');
+    function editArticle(id) {
+        props.history.push(`/article/${id}`);
     }
 
-    function deleteArticle() {
-        console.log('delete');
+    function deleteArticle(id) {
+        articleService.deleteArticleById(id).then(res => {
+            message.info('成功删除');
+            setTimeout(() => {
+                getArticles();
+                window.scrollTo(0, 0);
+            }, 1000)
+        }).catch(error => {
+            message.error("删除失败");
+        })
     }
+
+    function getArticles() {
+        articleService.getArticles().then(res => {
+            setData(res.data.articles);
+        })
+    }
+
+    useEffect(() => {
+        getArticles();
+    }, [])
+
     return (
         <Fragment>
             <Row style={{ marginBottom: 10 }}>
@@ -92,14 +108,14 @@ function Article() {
                     批量删除
                 </Button>
             </Row>
-            <Table 
-                rowSelection={rowSelection} 
-                columns={columns} 
-                dataSource={data} 
-                rowKey={record => record.id}
+            <Table
+                rowSelection={rowSelection}
+                columns={columns}
+                dataSource={data}
+                rowKey={record => record._id}
             />
         </Fragment>
     )
 }
 
-export default Article; 
+export default withRouter(Article); 
