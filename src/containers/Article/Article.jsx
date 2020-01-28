@@ -34,11 +34,13 @@ function Article(props) {
                 return (
                     <div>
                         <Icon
+                            title="更改"
                             style={{ color: 'rgb(24, 144, 255)', cursor: 'pointer' }}
                             type='edit'
                             onClick={() => { editArticle(article._id) }}
                         />
                         <Icon
+                            title="删除"
                             style={{ color: 'red', marginLeft: 20, cursor: 'pointer' }}
                             type='delete'
                             onClick={() => { deleteArticle(article._id) }}
